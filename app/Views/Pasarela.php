@@ -1,3 +1,41 @@
+<?php
+// SDK de Mercado Pago
+use vendor\autoload;
+
+//Agrega credenciales
+//Este product access token es el del vendedor, en este caso el de nosotros como desarrolladores
+MercadoPago\SDK::setAccessToken('TEST-7971775109331645-071918-28760388ba0f9271b1c8eec610ec8efa-167059581');
+
+//Objeto de preferencia
+$preference = new MercadoPago\Preference();
+
+$item = new MercadoPago\Item(); //se carga el producto a cobrar
+$item->id = '0001';
+$item->title = 'Producto';
+$item->quantity = 1;
+$item->unit_price = 25.50;
+$item->currency_id = "MXN";
+
+$preference->items = array($item);
+//Captura de la informacion de ese pago que se acaba de realizar
+
+//Urls a redireccionar cuando se haya terminado el pago
+$preference->back_urls = array(
+    "success" => "http://localhost/mattes/public/index.php/",
+    "failure" => "http://localhost/mattes/public/index.php/Error"
+);
+
+$preference->auto_return = "approved";
+//Solo transacciones aprobadas o canceladas, para que no queden pendientes
+$preference->binary_mode = true; 
+
+// Aceptar pagos exclusivamente git code usuarios registrados en mercado libre
+//$preference->purpose = 'wallet_purchase';
+
+$preference->save();
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -74,6 +112,32 @@
                 console.log(data); //orderID
             },
         }).render('#paypal-button-container');
+    </script>
+
+    <!-- ****************** SDK MercadoPago.js V2 ********************** -->
+    <script src="https://sdk.mercadopago.com/js/v2"></script>  
+
+    <script >
+        // Agrega credenciales de SDK
+        const mp = new MercadoPago("TEST-4effdaf0-3ee1-4763-aa34-8b02fc5ad550", {
+            locale: "es-MX",
+        });
+
+        // Inicializa el checkout
+        mp.checkout({
+            preference: {
+            id: '<?= $preference->id; ?>',
+            },
+            render: {
+            container: ".cho-container", // Indica el nombre de la clase donde se mostrará el botón de pago
+            label: 'Mercado Pago', // Cambia el texto del botón de pago (opcional)
+            },
+            theme: {
+                elementsColor: "#0088F7",
+                headerColor: "#0088F7"
+            }
+        });
+        
     </script>
 
 </body>
